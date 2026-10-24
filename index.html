@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Halftime Report Demo</title>
+<link rel="icon" href="assets/halftime-report-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#12284C; --navy-2:#1B3766; --ink:#0A1730; --orange:#E8641E; --orange-soft:#FDEBDF;
+  --bg:#F5F6F9; --card:#FFFFFF; --line:#E3E7EE; --text:#13203A; --muted:#66728A;
+  --good:#1F9D6B; --good-soft:#E3F5EC; --warn:#C98A0B; --warn-soft:#FFF4D9; --bad:#D2452F; --bad-soft:#FBE6E2;
+  --call:#0B1426; --tile:#16233D; --tile-2:#1E2E4E;
+  --radius:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:Inter,system-ui,sans-serif;background:var(--call);color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;cursor:pointer}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+
+/* ---------- top chrome ---------- */
+.chrome{height:60px;display:flex;align-items:center;gap:20px;padding:0 20px;background:var(--navy);color:#fff;border-bottom:1px solid rgba(255,255,255,.08);position:relative;z-index:5}
+.chrome img{height:26px}
+.persona{font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;padding:5px 10px;border-radius:99px;background:rgba(255,255,255,.1)}
+.persona.vc{background:var(--orange)}
+.illus{font-size:11px;color:rgba(255,255,255,.5);border:1px dashed rgba(255,255,255,.25);padding:4px 8px;border-radius:6px}
+.steps{margin-left:auto;display:flex;gap:4px;background:rgba(0,0,0,.2);padding:4px;border-radius:12px}
+.step{border:0;background:transparent;color:rgba(255,255,255,.65);padding:7px 12px;border-radius:9px;font-size:13px;font-weight:500;display:flex;gap:8px;align-items:center;white-space:nowrap}
+.step b{font-family:"JetBrains Mono",monospace;font-weight:500;font-size:12px;color:rgba(255,255,255,.45)}
+.step:hover{color:#fff}
+.step.on{background:#fff;color:var(--navy)}
+.step.on b{color:var(--orange)}
+body.hide-chrome .chrome{display:none}
+body.hide-chrome .stage{height:100vh}
+
+.stage{height:calc(100vh - 60px);position:relative}
+.scene{position:absolute;inset:0;display:none;animation:fade .45s ease}
+.scene.on{display:flex}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* ---------- call UI ---------- */
+.call{flex:1;display:flex;flex-direction:column;background:var(--call);color:#E8ECF4;min-width:0}
+.call-top{display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px}
+.call-top .title{font-weight:600}
+.call-top .sub{color:#8A97B1}
+.rec{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:600;padding:5px 10px;border-radius:99px;background:rgba(232,100,30,.15);color:#FFB487}
+.rec i{width:8px;height:8px;border-radius:50%;background:var(--orange);animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.clock{margin-left:auto;font-family:"JetBrains Mono",monospace;font-size:13px;color:#B9C3D8;background:rgba(255,255,255,.06);padding:5px 10px;border-radius:8px}
+.call-body{flex:1;display:flex;gap:14px;padding:0 20px;min-height:0}
+.tiles{flex:1;display:grid;gap:14px;min-width:0;position:relative}
+.tile{position:relative;background:var(--tile);border-radius:18px;overflow:hidden;display:flex;align-items:center;justify-content:center;transition:all .6s cubic-bezier(.2,.8,.2,1);outline:3px solid transparent;outline-offset:-3px;min-height:0}
+.tile.speaking{outline-color:var(--orange)}
+.tile .name{position:absolute;left:14px;bottom:14px;font-size:13px;font-weight:600;background:rgba(10,23,48,.7);backdrop-filter:blur(6px);padding:6px 10px;border-radius:8px;display:flex;align-items:center;gap:8px}
+.tile .name .tag{font-size:10px;letter-spacing:.06em;text-transform:uppercase;background:var(--orange);color:#fff;padding:2px 6px;border-radius:4px}
+.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.tile video{z-index:1}
+.tile .name,.camera-btn{z-index:2}
+.portrait{position:absolute;inset:0}
+.portrait svg{width:100%;height:100%;display:block}
+.portrait .breathe{animation:breathe 5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+@keyframes breathe{50%{transform:translateY(1.5px) scale(1.006)}}
+.portrait .sway{animation:sway 8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 85%}
+@keyframes sway{30%{transform:rotate(-1.4deg) translateX(-2px)}70%{transform:rotate(1.1deg) translateX(2px)}}
+.portrait .lid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:blink-lid 4.6s infinite}
+@keyframes blink-lid{0%,93%,100%{transform:scaleY(0)}96%{transform:scaleY(1)}}
+.portrait .bob{animation:bob 3.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 90%}
+@keyframes bob{25%{transform:rotate(-3deg) translateY(-3px)}75%{transform:rotate(3deg) translateY(1px)}}
+.portrait .mouth-talk{transform-box:fill-box;transform-origin:50% 0}
+.tile.speaking .portrait .mouth-talk{animation:talk .26s infinite alternate}
+@keyframes talk{to{transform:scaleY(1.8)}}
+.tile.cam-person{background:radial-gradient(120% 90% at 50% 20%,#2A3B5E,#131F37)}
+.camera-btn{position:absolute;right:12px;top:12px;font-size:11px;border:1px solid rgba(255,255,255,.2);background:rgba(10,23,48,.6);color:#C7D0E2;padding:5px 9px;border-radius:7px;z-index:2}
+.leaving{opacity:0;transform:scale(.85);pointer-events:none}
+
+/* AI avatar */
+.ai-tile{background:radial-gradient(90% 80% at 50% 40%,#1E3A6B 0%,#0E1B33 70%)}
+.avatar{position:relative;width:min(46%,260px);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
+.avatar .ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(232,100,30,.35);opacity:0}
+.ai-tile.speaking .avatar .ring{animation:ring 2s infinite}
+.ai-tile.speaking .avatar .ring:nth-child(2){animation-delay:.66s}
+.ai-tile.speaking .avatar .ring:nth-child(3){animation-delay:1.33s}
+@keyframes ring{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.avatar .core{width:78%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2A4C85,#12284C 70%);box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center}
+.avatar svg{width:56%;height:56%}
+.avatar .l{transition:transform .12s}
+.avatar .r{transition:transform .12s}
+.ai-tile.speaking .avatar .l{animation:talkL .36s infinite alternate}
+.ai-tile.speaking .avatar .r{animation:talkR .36s infinite alternate}
+@keyframes talkL{to{transform:translateX(-5px)}}
+@keyframes talkR{to{transform:translateX(5px) scaleY(.94)}}
+.wave{position:absolute;bottom:-34px;display:flex;gap:4px;height:22px;align-items:center}
+.wave i{width:4px;height:4px;border-radius:2px;background:var(--orange);opacity:.5}
+.ai-tile.speaking .wave i{animation:bar .5s infinite alternate}
+.wave i:nth-child(2){animation-delay:.1s!important}.wave i:nth-child(3){animation-delay:.2s!important}.wave i:nth-child(4){animation-delay:.3s!important}.wave i:nth-child(5){animation-delay:.15s!important}
+@keyframes bar{to{height:22px;opacity:1}}
+
+.pip{position:absolute;right:16px;bottom:16px;width:22%;min-width:160px;aspect-ratio:16/10;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:3}
+.pip .person{width:42%;font-size:22px}
+.pip .name{left:8px;bottom:8px;font-size:11px;padding:4px 7px}
+
+.caption{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);max-width:70%;text-align:center;font-size:18px;line-height:1.45;background:rgba(5,12,26,.78);padding:10px 16px;border-radius:10px;color:#fff;z-index:2;transition:opacity .3s}
+.caption:empty{opacity:0}
+.caption b{color:#FFB487;font-weight:600;margin-right:6px}
+
+.side{width:340px;flex-shrink:0;background:#111D33;border-radius:18px;display:flex;flex-direction:column;min-height:0}
+.side h4{margin:0;padding:16px 18px 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8A97B1;font-weight:600}
+.agenda{padding:0 18px 12px;display:flex;flex-direction:column;gap:8px;border-bottom:1px solid rgba(255,255,255,.06)}
+.agenda div{display:flex;gap:10px;align-items:center;font-size:13px;color:#C7D0E2}
+.agenda span{width:20px;height:20px;border-radius:50%;border:1.5px solid #3A4A6B;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.agenda .done span{background:var(--good);border-color:var(--good);color:#fff}
+.agenda .now span{border-color:var(--orange);color:var(--orange)}
+.agenda .now{color:#fff;font-weight:600}
+.transcript{flex:1;overflow-y:auto;padding:12px 18px 18px;display:flex;flex-direction:column;gap:12px;scroll-behavior:smooth}
+.line{font-size:13.5px;line-height:1.5;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(6px)}}
+.line .who{font-size:12px;font-weight:600;color:#8A97B1;display:flex;gap:8px;margin-bottom:2px}
+.line .who em{font-style:normal;font-family:"JetBrains Mono",monospace;font-weight:500;color:#56637E}
+.line.ai .who{color:#FFB487}
+.line.vc .who{color:#7DD3C7}
+.line .txt{color:#DCE2EE}
+.line.sys{font-size:12px;color:#8A97B1;text-align:center;padding:6px;border:1px dashed rgba(255,255,255,.12);border-radius:8px}
+
+.controls{display:flex;justify-content:center;gap:12px;padding:16px}
+.ctl{width:46px;height:46px;border-radius:50%;border:0;background:#1F2D4A;color:#DCE2EE;display:flex;align-items:center;justify-content:center}
+.ctl svg{width:20px;height:20px}
+.ctl.end{background:#D2452F;width:64px;border-radius:23px}
+.toast{position:absolute;top:16px;left:50%;transform:translate(-50%,-10px);background:#fff;color:var(--text);padding:10px 16px;border-radius:12px;font-size:14px;font-weight:500;box-shadow:0 12px 30px rgba(0,0,0,.35);display:flex;align-items:center;gap:10px;opacity:0;transition:all .35s;z-index:10;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.toast .dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+
+/* ---------- light panels (VC) ---------- */
+.panel{background:var(--bg);color:var(--text);display:flex;flex-direction:column;min-width:0;min-height:0}
+.panel-head{display:flex;align-items:center;gap:12px;padding:16px 22px;background:#fff;border-bottom:1px solid var(--line)}
+.panel-head h2{margin:0;font-size:17px;font-weight:700}
+.panel-head .sub{font-size:13px;color:var(--muted)}
+.pill{font-size:12px;font-weight:600;padding:5px 10px;border-radius:99px;display:inline-flex;gap:6px;align-items:center;white-space:nowrap}
+.panel-head .btn{white-space:nowrap}
+.pill.listen{background:var(--orange-soft);color:#B4480F}
+.pill.listen i{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:blink 1.4s infinite}
+.btn{border:0;border-radius:10px;padding:10px 16px;font-weight:600;font-size:14px}
+.btn.primary{background:var(--orange);color:#fff;box-shadow:0 4px 14px rgba(232,100,30,.35)}
+.btn.primary:hover{background:#D25715}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
+.btn.sm{padding:7px 12px;font-size:13px;border-radius:8px}
+.panel-body{flex:1;overflow-y:auto;padding:18px 22px 28px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.card h3{margin:0 0 10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:8px}
+.card h3 .live{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:500;color:var(--orange);font-size:12px}
+.summary{font-size:15px;line-height:1.6;margin:0}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kpi .k{font-size:12px;color:var(--muted)}
+.kpi .v{font-size:20px;font-weight:700;margin-top:2px;letter-spacing:-.01em}
+.kpi .d{font-size:12px;font-weight:600;margin-top:2px}
+.up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--warn)}
+.notes{display:flex;flex-direction:column;gap:2px}
+.note{display:flex;gap:12px;padding:9px 8px;border-radius:8px;font-size:14px;line-height:1.5;transition:background 1.5s}
+.note.fresh{background:var(--orange-soft);animation:up .35s ease}
+.note .ts{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);padding-top:2px;flex-shrink:0;width:42px}
+.note .src{display:inline-block;font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;background:var(--good-soft);color:var(--good);margin-left:6px}
+.note .src.w{background:var(--warn-soft);color:#9A6A05}
+.flag{display:flex;gap:12px;padding:12px;border-radius:10px;background:var(--bad-soft);font-size:14px;line-height:1.5;margin-top:8px;animation:up .35s ease}
+.flag.warn{background:var(--warn-soft)}
+.flag .ic{width:26px;height:26px;border-radius:50%;background:var(--bad);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:14px}
+.flag.warn .ic{background:var(--warn)}
+.flag b{display:block}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-size:13px;padding:7px 11px;border-radius:99px;background:#EEF1F6;color:var(--text)}
+
+/* split scene */
+.split{flex:1;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}
+.split .call .call-body{flex-direction:column;padding-bottom:16px}
+.split .tiles{grid-template-columns:1fr 1fr;flex:0 0 auto;height:42%}
+.split .transcript-box{flex:1;background:#111D33;border-radius:18px;display:flex;flex-direction:column;min-height:0}
+
+/* copilot cards */
+.nudge{background:#fff;border:1px solid var(--line);border-left:4px solid var(--orange);border-radius:12px;padding:14px 16px;animation:pop .45s cubic-bezier(.2,.9,.3,1.3)}
+@keyframes pop{from{opacity:0;transform:translateY(10px) scale(.97)}}
+.nudge .kind{font-size:11px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;color:var(--orange);display:flex;align-items:center;gap:8px}
+.nudge .kind span{margin-left:auto;font-family:"JetBrains Mono",monospace;font-weight:500;color:var(--muted);letter-spacing:0;text-transform:none}
+.nudge h5{margin:6px 0 4px;font-size:16px;line-height:1.35}
+.nudge p{margin:0 0 8px;font-size:13.5px;color:var(--muted);line-height:1.5}
+.nudge .q{background:#F4F6FA;border-radius:8px;padding:10px 12px;font-size:14px;font-style:italic;margin:8px 0 12px;line-height:1.5}
+.nudge .acts{display:flex;gap:8px}
+.nudge.asked{border-left-color:var(--good);opacity:.7}
+.nudge.asked .kind{color:var(--good)}
+.nudge.top{box-shadow:0 0 0 3px rgba(232,100,30,.18)}
+.cues{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cue{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px}
+.cue .k{color:var(--muted);font-size:12px}
+.cue .v{font-weight:600;margin-top:3px}
+.meter{height:6px;border-radius:3px;background:#EEF1F6;margin-top:8px;overflow:hidden;display:flex}
+.meter i{display:block;height:100%}
+
+/* ---------- analytics ---------- */
+.dash{flex:1;background:var(--bg);overflow-y:auto}
+.dash-in{max-width:1280px;margin:0 auto;padding:26px 28px 40px}
+.dash-head{display:flex;align-items:flex-end;gap:16px;margin-bottom:20px}
+.dash-head h1{margin:0;font-size:26px;letter-spacing:-.02em}
+.dash-head .sub{color:var(--muted);font-size:14px;margin-top:4px}
+.dash-head .acts{margin-left:auto;display:flex;gap:10px}
+.verdict{display:flex;gap:16px;align-items:center;background:var(--navy);color:#fff;border-radius:16px;padding:18px 22px;margin-bottom:16px}
+.verdict .score{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--orange) 0 78%,rgba(255,255,255,.15) 0);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.verdict .score b{width:50px;height:50px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:18px}
+.verdict h2{margin:0;font-size:18px}
+.verdict p{margin:4px 0 0;color:#B9C3D8;font-size:14px;line-height:1.5}
+.grid{display:grid;gap:16px}
+.g6{grid-template-columns:repeat(6,1fr)}
+.g2{grid-template-columns:1.4fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.tab-row{display:flex;gap:6px;margin:26px 0 12px;align-items:center}
+.tab-row h2{margin:0;font-size:18px}
+.tab-row .hint{color:var(--muted);font-size:13px;margin-left:8px}
+.stat .k{font-size:12px;color:var(--muted)}
+.stat .v{font-size:24px;font-weight:700;letter-spacing:-.02em;margin:4px 0 2px}
+.stat .d{font-size:12px;font-weight:600}
+.chart svg{width:100%;height:auto;display:block}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.list{display:flex;flex-direction:column;gap:10px;font-size:14px;line-height:1.5}
+.list .row{display:flex;gap:10px;align-items:flex-start}
+.check{width:18px;height:18px;border-radius:5px;border:1.5px solid #B9C3D8;flex-shrink:0;margin-top:2px}
+.owner{font-size:11px;font-weight:600;padding:2px 7px;border-radius:4px;background:#EEF1F6;color:var(--muted);margin-left:auto;white-space:nowrap}
+.bar-h{height:8px;border-radius:4px;background:#EEF1F6;overflow:hidden;margin-top:6px}
+.bar-h i{display:block;height:100%;border-radius:4px}
+.wb{display:flex;justify-content:space-between;align-items:baseline;font-size:14px}
+.wb span{color:var(--muted);font-size:13px}
+.private{font-size:12px;color:var(--muted);display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);padding:4px 10px;border-radius:99px}
+
+.hint-keys{position:fixed;right:14px;bottom:12px;font-size:11px;color:rgba(255,255,255,.35);z-index:20;pointer-events:none}
+.hint-keys kbd{font-family:inherit;border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:0 4px}
+body.hide-chrome .hint-keys{display:none}
+@media (max-width:1100px){.side{display:none}.g6{grid-template-columns:repeat(3,1fr)}.g2,.g3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="chrome">
+  <img src="assets/halftime-report-logo-reversed.svg" alt="Halftime Report">
+  <span class="persona" id="persona">Founder view</span>
+  <span class="illus">Illustrative data</span>
+  <nav class="steps" id="steps"></nav>
+</header>
+
+<main class="stage">
+
+  <!-- ===== Scene 1: Founder + AI ===== -->
+  <section class="scene" data-scene="0">
+    <div class="call">
+      <div class="call-top">
+        <span class="title">Q3 check-in · Adonis × Lakeshore Ventures</span>
+        <span class="rec"><i></i>AI check-in</span>
+        <span class="clock" data-clock>00:00</span>
+      </div>
+      <div class="call-body">
+        <div class="tiles" style="grid-template-columns:1fr">
+          <div class="tile ai-tile" id="s1-ai">
+            <div class="avatar">
+              <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+              <div class="core"><svg viewBox="0 0 200 200"><path class="l" fill="#fff" d="M94.02 8 A92 92 0 0 0 94.02 192 Z"/><path class="r" fill="#E8641E" d="M105.98 8 A92 92 0 0 1 105.98 192 Z"/></svg></div>
+              <div class="wave"><i></i><i></i><i></i><i></i><i></i></div>
+            </div>
+            <div class="name">Jordan <span class="tag">AI</span></div>
+            <div class="caption" id="s1-cap"></div>
+            <div class="tile pip cam-person" id="s1-me">
+              <div class="portrait" data-portrait="founder"></div>
+              <div class="name">Priya Raman (you)</div>
+              <button class="camera-btn" data-cam>Use camera</button>
+            </div>
+          </div>
+        </div>
+        <aside class="side">
+          <h4>Agenda · prepared from your books</h4>
+          <div class="agenda" id="s1-agenda">
+            <div class="now"><span>1</span>Q3 revenue &amp; growth</div>
+            <div><span>2</span>Burn, runway &amp; margin</div>
+            <div><span>3</span>Hiring plan vs. actuals</div>
+            <div><span>4</span>Partner joins at 15:00</div>
+          </div>
+          <h4>Live transcript</h4>
+          <div class="transcript" id="s1-tx"></div>
+        </aside>
+      </div>
+      <div class="controls">
+        <button class="ctl" title="Mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <button class="ctl" title="Camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg></button>
+        <button class="ctl" title="Share"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 14V8m-3 3 3-3 3 3"/></svg></button>
+        <button class="ctl end" title="Leave"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-3 0-6 .8-8.6 2.4-.7.4-.9 1.3-.5 2l1 1.7c.4.6 1.2.8 1.8.5l2.3-1.2c.5-.3.8-.8.8-1.4V11.6a14 14 0 0 1 6.4 0V13c0 .6.3 1.1.8 1.4l2.3 1.2c.6.3 1.4.1 1.8-.5l1-1.7c.4-.7.2-1.6-.5-2C18 9.8 15 9 12 9z"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Scene 2: VC side-by-side ===== -->
+  <section class="scene" data-scene="1">
+    <div class="split">
+      <div class="call">
+        <div class="call-top">
+          <span class="title">Adonis · AI check-in in progress</span>
+          <span class="rec"><i></i>Jordan AI is leading</span>
+          <span class="clock" data-clock>10:00</span>
+        </div>
+        <div class="call-body">
+          <div class="tiles">
+            <div class="tile ai-tile" id="s2-ai">
+              <div class="avatar" style="width:52%">
+                <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+                <div class="core"><svg viewBox="0 0 200 200"><path class="l" fill="#fff" d="M94.02 8 A92 92 0 0 0 94.02 192 Z"/><path class="r" fill="#E8641E" d="M105.98 8 A92 92 0 0 1 105.98 192 Z"/></svg></div>
+              </div>
+              <div class="name">Jordan <span class="tag">AI</span></div>
+            </div>
+            <div class="tile cam-person" id="s2-me">
+              <div class="portrait" data-portrait="founder"></div>
+              <div class="name">Priya Raman · CEO, Adonis</div>
+            </div>
+          </div>
+          <div class="transcript-box">
+            <h4 style="margin:0;padding:14px 18px 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8A97B1">Live transcript</h4>
+            <div class="transcript" id="s2-tx"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Live notes · Adonis</h2>
+            <div class="sub">AI revenue recovery for healthcare · Q3 2026 check-in · books synced from QuickBooks, Stripe, Gusto</div>
+          </div>
+          <span class="pill listen" style="margin-left:auto"><i></i>Listening · muted</span>
+          <button class="btn primary" id="joinBtn">Join call</button>
+        </div>
+        <div class="panel-body">
+          <div class="card">
+            <h3>Summary so far <span class="live">● updating live</span></h3>
+            <p class="summary" id="s2-summary">Strong Q3: MRR up 33% QoQ to $138K. Burn rose 24% on planned go-to-market hires, leaving ~14 months of runway. Gross margin fell 5 pts as AI agent costs per claim rose. Founder was vague on engineering hiring.</p>
+          </div>
+          <div class="card">
+            <h3>KPIs vs. last check-in <span class="live" style="color:var(--good)">✓ reconciled to books</span></h3>
+            <div class="kpis">
+              <div class="kpi"><div class="k">MRR</div><div class="v">$138K</div><div class="d up">▲ 33% QoQ</div></div>
+              <div class="kpi"><div class="k">Net burn / mo</div><div class="v">$212K</div><div class="d down">▲ 24%</div></div>
+              <div class="kpi"><div class="k">Runway</div><div class="v">13.7 mo</div><div class="d down">▼ 2.1 mo</div></div>
+              <div class="kpi"><div class="k">Gross margin</div><div class="v">71%</div><div class="d down">▼ 5 pts</div></div>
+              <div class="kpi"><div class="k">Provider customers</div><div class="v">46</div><div class="d up">▲ 9</div></div>
+              <div class="kpi"><div class="k">Headcount</div><div class="v">16</div><div class="d flat">+3 hired · −1 left</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Key points</h3>
+            <div class="notes" id="s2-notes">
+              <div class="note"><span class="ts">02:14</span><div>September growth slowed to 7%. Two health-system deals got stuck in procurement; one closed Oct 17. <span class="src">✓ Stripe</span></div></div>
+              <div class="note"><span class="ts">04:40</span><div>Burn increase came from 2 AEs and a CS lead hired in August, plus higher AI inference costs.</div></div>
+              <div class="note"><span class="ts">06:05</span><div>Margin dip: payer-portal agents make many model calls per claim. Moving simple denials to a smaller model.</div></div>
+              <div class="note"><span class="ts">08:42</span><div>Engineering hiring: 1 offer out vs. plan of 2 by Q4. "Team is stretched but fine." <span class="src w">3.1s pause · eyes off camera</span></div></div>
+            </div>
+          </div>
+          <div class="card" id="s2-flags">
+            <h3>Flags for when you join</h3>
+            <div class="flag"><span class="ic">!</span><div><b>Engineering headcount is down 1 in October</b>Gusto shows a senior engineer offboarded Oct 3. The founder hasn't mentioned it.</div></div>
+          </div>
+          <div class="card">
+            <h3>Suggested openers</h3>
+            <div class="chips"><span class="chip">🎉 Congratulate on the Oct 17 health-system deal</span><span class="chip">Series A timing &amp; milestones</span><span class="chip">Engineering capacity</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Scene 3: VC joins (founder view) ===== -->
+  <section class="scene" data-scene="2">
+    <div class="call">
+      <div class="call-top">
+        <span class="title">Q3 check-in · Adonis × Lakeshore Ventures</span>
+        <span class="rec" id="s3-rec"><i></i>AI notes on</span>
+        <span class="clock" data-clock>15:00</span>
+      </div>
+      <div class="call-body">
+        <div class="tiles" id="s3-tiles" style="grid-template-columns:1fr 1fr">
+          <div class="toast" id="s3-toast"><span class="dot" style="background:linear-gradient(135deg,#2F7FD8,#1BB5A5)">JL</span><span id="s3-toast-txt">Jordan Lee joined the call</span></div>
+          <div class="tile ai-tile" id="s3-ai">
+            <div class="avatar">
+              <span class="ring"></span><span class="ring"></span><span class="ring"></span>
+              <div class="core"><svg viewBox="0 0 200 200"><path class="l" fill="#fff" d="M94.02 8 A92 92 0 0 0 94.02 192 Z"/><path class="r" fill="#E8641E" d="M105.98 8 A92 92 0 0 1 105.98 192 Z"/></svg></div>
+            </div>
+            <div class="name">Jordan <span class="tag">AI</span></div>
+          </div>
+          <div class="tile cam-person" id="s3-vc" style="display:none">
+            <div class="portrait" data-portrait="vc"></div>
+            <div class="name">Jordan Lee · Partner, Lakeshore</div>
+          </div>
+          <div class="tile cam-person" id="s3-me">
+            <div class="portrait" data-portrait="founder"></div>
+            <div class="name">Priya Raman (you)</div>
+            <button class="camera-btn" data-cam>Use camera</button>
+          </div>
+          <div class="caption" id="s3-cap" style="bottom:28px"></div>
+        </div>
+        <aside class="side">
+          <h4>Agenda</h4>
+          <div class="agenda">
+            <div class="done"><span>✓</span>Q3 revenue &amp; growth</div>
+            <div class="done"><span>✓</span>Burn, runway &amp; margin</div>
+            <div class="done"><span>✓</span>Hiring plan vs. actuals</div>
+            <div class="now"><span>4</span>Time with Jordan</div>
+          </div>
+          <h4>Live transcript</h4>
+          <div class="transcript" id="s3-tx"></div>
+        </aside>
+      </div>
+      <div class="controls">
+        <button class="ctl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <button class="ctl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg></button>
+        <button class="ctl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 14V8m-3 3 3-3 3 3"/></svg></button>
+        <button class="ctl end"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 9c-3 0-6 .8-8.6 2.4-.7.4-.9 1.3-.5 2l1 1.7c.4.6 1.2.8 1.8.5l2.3-1.2c.5-.3.8-.8.8-1.4V11.6a14 14 0 0 1 6.4 0V13c0 .6.3 1.1.8 1.4l2.3 1.2c.6.3 1.4.1 1.8-.5l1-1.7c.4-.7.2-1.6-.5-2C18 9.8 15 9 12 9z"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Scene 4: Copilot nudges (VC view) ===== -->
+  <section class="scene" data-scene="3">
+    <div class="split">
+      <div class="call">
+        <div class="call-top">
+          <span class="title">Adonis · Q3 check-in</span>
+          <span class="rec"><i></i>AI notes on</span>
+          <span class="clock" data-clock>25:00</span>
+        </div>
+        <div class="call-body">
+          <div class="tiles">
+            <div class="tile cam-person" id="s4-me">
+              <div class="portrait" data-portrait="founder"></div>
+              <div class="name">Priya Raman · CEO</div>
+            </div>
+            <div class="tile cam-person" id="s4-vc">
+              <div class="portrait" data-portrait="vc"></div>
+              <div class="name">Jordan Lee (you)</div>
+              <button class="camera-btn" data-cam>Use camera</button>
+            </div>
+          </div>
+          <div class="transcript-box">
+            <h4 style="margin:0;padding:14px 18px 4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#8A97B1">Live transcript</h4>
+            <div class="transcript" id="s4-tx"></div>
+          </div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>Copilot</h2>
+            <div class="sub">Only you can see this · 5 min left</div>
+          </div>
+          <span class="pill listen" style="margin-left:auto"><i></i>Taking notes</span>
+        </div>
+        <div class="panel-body" id="s4-body">
+          <div class="card">
+            <h3>Live cues</h3>
+            <div class="cues">
+              <div class="cue"><div class="k">Talk time</div><div class="v">Priya 62% · You 38%</div><div class="meter"><i style="width:62%;background:#9B6BD6"></i><i style="width:38%;background:#1BB5A5"></i></div></div>
+              <div class="cue"><div class="k">Founder sentiment</div><div class="v" id="s4-sent">Upbeat on growth</div><div class="meter"><i id="s4-sentbar" style="width:78%;background:var(--good);transition:all 1s"></i></div></div>
+              <div class="cue"><div class="k">Agenda coverage</div><div class="v">5 of 6 topics</div><div class="meter"><i style="width:83%;background:var(--navy)"></i></div></div>
+              <div class="cue"><div class="k">Visual cue</div><div class="v" id="s4-vis">Steady eye contact</div></div>
+            </div>
+          </div>
+          <h3 style="margin:6px 0 -4px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)">Missed questions</h3>
+          <div id="s4-nudges" style="display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Scene 5: Post-meeting analytics ===== -->
+  <section class="scene" data-scene="4">
+    <div class="dash">
+      <div class="dash-in">
+        <div class="dash-head">
+          <div>
+            <h1>Adonis · Post-meeting report</h1>
+            <div class="sub">Q3 2026 check-in · Oct 24, 2026 · 30 min · Jordan AI (0–15) → Jordan Lee (15–30)</div>
+          </div>
+          <div class="acts">
+            <button class="btn ghost sm">Share summary with founder</button>
+            <button class="btn primary sm">Add to LP report</button>
+          </div>
+        </div>
+
+        <div class="verdict">
+          <div class="score"><b>78</b></div>
+          <div>
+            <h2>Strong traction, but key-person risk is rising</h2>
+            <p>Revenue is ahead of plan and the books are audit-ready. Losing a senior engineer has put the founder on-call herself, and Q4 engineering hiring is behind plan. Next check-in moved up to 2 weeks.</p>
+          </div>
+        </div>
+
+        <div class="grid g6">
+          <div class="card stat"><div class="k">MRR</div><div class="v">$138K</div><div class="d up">▲ 33% QoQ</div></div>
+          <div class="card stat"><div class="k">Net burn / mo</div><div class="v">$212K</div><div class="d down">▲ 24% QoQ</div></div>
+          <div class="card stat"><div class="k">Runway</div><div class="v">13.7 mo</div><div class="d flat">Raise by Q2 2027</div></div>
+          <div class="card stat"><div class="k">Gross margin</div><div class="v">71%</div><div class="d down">▼ 5 pts</div></div>
+          <div class="card stat"><div class="k">Recovered for customers</div><div class="v">$18.4M</div><div class="d up">▲ 41% QoQ</div></div>
+          <div class="card stat"><div class="k">Audit readiness</div><div class="v">92%</div><div class="d flat">2 items to fix</div></div>
+        </div>
+
+        <div class="tab-row"><h2>Financial health</h2><span class="hint">Reconciled against QuickBooks, Stripe and Gusto</span></div>
+        <div class="grid g2">
+          <div class="card chart">
+            <h3>Revenue vs. burn · last 6 months ($K / mo)</h3>
+            <div class="legend"><span><i style="background:var(--navy)"></i>MRR</span><span><i style="background:var(--orange)"></i>Net burn</span></div>
+            <svg id="chart-rev" viewBox="0 0 640 260"></svg>
+          </div>
+          <div class="card">
+            <h3>Red flags &amp; watch items</h3>
+            <div class="flag"><span class="ic">!</span><div><b>Key-person risk in engineering</b>Senior engineer who owned the EHR integrations left Oct 3 for a competitor. CEO is covering on-call.</div></div>
+            <div class="flag warn"><span class="ic">!</span><div><b>Gross margin compression</b>AI inference cost per claim up ~40%. Routing simple denials to a smaller model should recover 4–6 pts by Q1.</div></div>
+            <div class="flag warn"><span class="ic">!</span><div><b>Collections slipping</b>Receivables over 60 days rose to $41K, from $12K.</div></div>
+            <div class="flag" style="background:var(--good-soft)"><span class="ic" style="background:var(--good)">✓</span><div><b>Pipeline is strong</b>$410K qualified pipeline, including 3 hospital-system pilots priced on share of recovered revenue.</div></div>
+          </div>
+        </div>
+
+        <div class="tab-row"><h2>Founder wellbeing</h2><span class="private">🔒 Visible to the covering partner only</span></div>
+        <div class="grid g3">
+          <div class="card chart" style="grid-column:span 2">
+            <h3>Sentiment across the call</h3>
+            <svg id="chart-sent" viewBox="0 0 640 200"></svg>
+          </div>
+          <div class="card">
+            <h3>Signals</h3>
+            <div class="list">
+              <div><div class="wb">Workload <b class="down">High</b></div><div class="bar-h"><i style="width:88%;background:var(--bad)"></i></div></div>
+              <div><div class="wb">Sleep (self-reported) <b class="flat">~5 h / night</b></div><div class="bar-h"><i style="width:40%;background:var(--warn)"></i></div></div>
+              <div><div class="wb">Confidence in plan <b class="up">Strong</b></div><div class="bar-h"><i style="width:80%;background:var(--good)"></i></div></div>
+              <div><div class="wb">Openness <b class="up">Improved with partner</b></div><div class="bar-h"><i style="width:72%;background:var(--good)"></i></div></div>
+              <div style="font-size:13px;color:var(--muted)">Hesitation cues clustered around engineering (08:42, 26:10). She opened up once asked directly.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-row"><h2>Follow-ups</h2></div>
+        <div class="grid g3">
+          <div class="card">
+            <h3>Action items</h3>
+            <div class="list">
+              <div class="row"><span class="check"></span>Intro 2 fractional engineering leads<span class="owner">Jordan · Oct 28</span></div>
+              <div class="row"><span class="check"></span>Share model-routing cost analysis<span class="owner">Priya · Nov 7</span></div>
+              <div class="row"><span class="check"></span>Fix 2 uncategorized transactions and 1 missing W-9<span class="owner">Priya · Nov 1</span></div>
+              <div class="row"><span class="check"></span>Intro 3 healthcare Series A leads at $200K MRR<span class="owner">Jordan · Q1</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Commitments vs. last check-in</h3>
+            <div class="list">
+              <div class="row"><span style="color:var(--good)">✓</span>Reach $130K MRR by Sept<span class="owner" style="background:var(--good-soft);color:var(--good)">Hit</span></div>
+              <div class="row"><span style="color:var(--good)">✓</span>Hire 2 AEs<span class="owner" style="background:var(--good-soft);color:var(--good)">Hit</span></div>
+              <div class="row"><span style="color:var(--bad)">✕</span>Hire 2 engineers by Q4<span class="owner" style="background:var(--bad-soft);color:var(--bad)">0 of 2</span></div>
+              <div class="row"><span style="color:var(--warn)">◐</span>Gross margin ≥ 75%<span class="owner" style="background:var(--warn-soft);color:#9A6A05">71%</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>How the AI handoff went</h3>
+            <div class="list">
+              <div class="wb">Questions asked by AI <b>11</b></div>
+              <div class="wb">Partner time saved <b>15 min</b></div>
+              <div class="wb">Copilot nudges used <b>1 of 3</b></div>
+              <div class="wb">Next check-in <b style="color:var(--orange)">Nov 7 (moved up)</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="hint-keys"><kbd>←</kbd> <kbd>→</kbd> scenes · <kbd>R</kbd> replay · <kbd>H</kbd> hide chrome</div>
+
+<script>
+const SPEED = Number(new URLSearchParams(location.search).get('speed')) || 1;
+const SCENES = [
+  {label:'AI check-in', t:'0:00', persona:'Founder view', clock:0},
+  {label:'Partner briefed', t:'10:00', persona:'Partner view', clock:600},
+  {label:'Partner joins', t:'15:00', persona:'Founder view', clock:900},
+  {label:'Missed questions', t:'25:00', persona:'Partner view', clock:1500},
+  {label:'Post-meeting', t:'30:00', persona:'Partner view', clock:null},
+];
+const $ = s => document.querySelector(s);
+let timers = [], current = -1, clockSec = 0, camStream = null;
+
+function later(ms, fn){ timers.push(setTimeout(fn, ms / SPEED)); }
+function clearAll(){ timers.forEach(clearTimeout); timers.forEach(clearInterval); timers = []; }
+const fmt = s => String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+
+// ---- nav ----
+const steps = $('#steps');
+SCENES.forEach((s,i) => {
+  const b = document.createElement('button');
+  b.className = 'step'; b.innerHTML = `<b>${s.t}</b>${s.label}`;
+  b.onclick = () => go(i);
+  steps.appendChild(b);
+});
+
+function go(i){
+  if (i < 0 || i >= SCENES.length) return;
+  clearAll();
+  current = i;
+  document.querySelectorAll('.scene').forEach(el => el.classList.toggle('on', +el.dataset.scene === i));
+  [...steps.children].forEach((b,j) => b.classList.toggle('on', j === i));
+  const p = $('#persona'); p.textContent = SCENES[i].persona; p.classList.toggle('vc', SCENES[i].persona !== 'Founder view');
+  history.replaceState(null, '', '#' + (i+1));
+  if (SCENES[i].clock !== null){
+    clockSec = SCENES[i].clock;
+    const el = document.querySelector(`[data-scene="${i}"] [data-clock]`);
+    el.textContent = fmt(clockSec);
+    timers.push(setInterval(() => { clockSec++; el.textContent = fmt(clockSec); }, 1000));
+  }
+  attachCam();
+  [s1, s2, s3, s4, s5][i]();
+}
+
+// ---- transcript engine ----
+// Each line: [speaker, text, opts]. speaker: 'ai' | 'f' (founder) | 'vc' | 'sys'
+const NAMES = {ai:'Jordan · AI', f:'Priya Raman', vc:'Jordan Lee'};
+function play(lines, cfg, start = 0, done){
+  let t = start;
+  lines.forEach(([who, text, o = {}]) => {
+    t += (o.pause || 700);
+    const words = text.split(' ');
+    const dur = words.length * 230;
+    const at = t;
+    later(at, () => {
+      const tx = cfg.tx;
+      const div = document.createElement('div');
+      div.className = 'line ' + who;
+      if (who === 'sys'){ div.textContent = text; tx.appendChild(div); tx.scrollTop = tx.scrollHeight; return; }
+      div.innerHTML = `<div class="who">${NAMES[who]}<em>${fmt(clockSec)}</em></div><div class="txt"></div>`;
+      tx.appendChild(div);
+      const txt = div.querySelector('.txt');
+      const tile = cfg.tiles && cfg.tiles[who];
+      Object.values(cfg.tiles || {}).forEach(el => el && el.classList.remove('speaking'));
+      if (tile) tile.classList.add('speaking');
+      words.forEach((w, k) => later(k * 230, () => {
+        txt.textContent = words.slice(0, k+1).join(' ');
+        if (cfg.cap) cfg.cap.innerHTML = `<b>${who === 'ai' ? 'Jordan AI' : who === 'vc' ? 'Jordan' : 'Priya'}</b>${txt.textContent}`;
+        tx.scrollTop = tx.scrollHeight;
+      }));
+      later(dur, () => { if (tile) tile.classList.remove('speaking'); });
+      if (o.then) later(dur, o.then);
+    });
+    if (who !== 'sys') t += dur;
+  });
+  if (done) later(t + 400, done);
+  return t;
+}
+
+// ---- Scene 1 ----
+function s1(){
+  const tx = $('#s1-tx'); tx.innerHTML = ''; $('#s1-cap').innerHTML = '';
+  const ag = [...$('#s1-agenda').children];
+  const setAg = n => ag.forEach((d,k) => { d.className = k < n ? 'done' : k === n ? 'now' : ''; d.querySelector('span').textContent = k < n ? '✓' : k+1; });
+  setAg(0);
+  const cfg = {tx, cap: $('#s1-cap'), tiles: {ai: $('#s1-ai'), f: $('#s1-me')}};
+  play([
+    ['ai', "Hi Priya, I'm Jordan's AI check-in partner. Jordan will join at the 15-minute mark. I've already pulled Adonis's Q3 numbers from QuickBooks and Stripe, so we can skip the basics.", {pause:900}],
+    ['f', "Sounds great, let's do it."],
+    ['ai', "MRR grew from $104K to $138K in Q3, about 33% for the quarter. September was your slowest month at 7%. What happened there?"],
+    ['f', "Two health-system deals got stuck in procurement. One of them signed last week, so we're in good shape."],
+    ['ai', "Net burn went from $171K to $212K a month, which puts runway at about 14 months. Was that increase planned?", {then: () => setAg(1)}],
+    ['f', "Mostly. We hired two AEs and a customer success lead in August. Our AI agent costs also went up more than we expected."],
+    ['ai', "Gross margin dropped from 76% to 71%. Is that the agent cost?"],
+    ['f', "Yeah. Our payer-portal agents make a lot of model calls per claim. We're moving the simple denials to a smaller model."],
+    ['ai', "Last check-in you planned to hire two engineers by Q4. Where does that stand?", {then: () => setAg(2)}],
+    ['f', "We have one offer out. Engineering is... it's fine. The team is stretched, but fine.", {pause:1100}],
+  ], cfg);
+}
+
+// ---- Scene 2 ----
+function s2(){
+  const tx = $('#s2-tx'); tx.innerHTML = '';
+  const notes = $('#s2-notes');
+  notes.querySelectorAll('.fresh-added').forEach(n => n.remove());
+  const flags = $('#s2-flags');
+  flags.querySelectorAll('.added').forEach(n => n.remove());
+  const sum = $('#s2-summary');
+  const baseSum = "Strong Q3: MRR up 33% QoQ to $138K. Burn rose 24% on planned go-to-market hires, leaving ~14 months of runway. Gross margin fell 5 pts as AI agent costs per claim rose. Founder was vague on engineering hiring.";
+  sum.textContent = baseSum;
+  const addNote = (ts, html) => {
+    const d = document.createElement('div');
+    d.className = 'note fresh fresh-added';
+    d.innerHTML = `<span class="ts">${ts}</span><div>${html}</div>`;
+    notes.appendChild(d);
+    d.scrollIntoView({behavior:'smooth', block:'nearest'});
+    later(2500, () => d.classList.remove('fresh'));
+  };
+  const cfg = {tx, tiles: {ai: $('#s2-ai'), f: $('#s2-me')}};
+  [['ai','Last check-in you planned to hire two engineers by Q4. Where does that stand?'],['f','We have one offer out. Engineering is... it\'s fine. The team is stretched, but fine.']]
+    .forEach(([w,t]) => { const d = document.createElement('div'); d.className='line '+w; d.innerHTML=`<div class="who">${NAMES[w]}<em>${w==='ai'?'08:31':'08:42'}</em></div><div class="txt">${t}</div>`; tx.appendChild(d); });
+  play([
+    ['ai', "What does the pipeline look like heading into Q4?", {pause:600}],
+    ['f', "About $410K in qualified pipeline, including three hospital systems in pilot. We're pricing those as a share of revenue recovered.", {then: () => addNote('10:20', 'Pipeline: $410K qualified, including 3 hospital-system pilots priced on share of recovered revenue.')}],
+    ['ai', "When are you planning to raise next?"],
+    ['f', "Series A, ideally Q2 next year. We'd love intros to healthcare-focused leads when the time comes.", {then: () => {
+      addNote('11:30', 'Plans to raise a Series A in Q2 2027. <b>Ask:</b> intros to healthcare-focused leads.');
+      sum.textContent = baseSum + " Pipeline is healthy at $410K and a Series A is planned for Q2 2027.";
+    }}],
+    ['ai', "Is there anything you'd like Jordan's help with before Jordan joins?"],
+    ['f', "Honestly, recruiting. Engineers who know EHR integrations are really hard to find.", {then: () => {
+      addNote('12:50', 'Asked for help recruiting engineers with EHR integration experience. <span class="src w">ties to the Gusto flag</span>');
+      const f = document.createElement('div');
+      f.className = 'flag warn added';
+      f.innerHTML = '<span class="ic">!</span><div><b>Recruiting ask lines up with the departure</b>Consider asking directly about the Oct 3 offboarding and who owns that work now.</div>';
+      flags.appendChild(f);
+    }}],
+  ], cfg);
+}
+$('#joinBtn').onclick = () => go(2);
+
+// ---- Scene 3 ----
+function s3(){
+  const tx = $('#s3-tx'); tx.innerHTML = ''; $('#s3-cap').innerHTML = '';
+  const ai = $('#s3-ai'), vc = $('#s3-vc'), toast = $('#s3-toast'), tiles = $('#s3-tiles');
+  ai.style.display = ''; ai.classList.remove('leaving'); vc.style.display = 'none';
+  tiles.style.gridTemplateColumns = '1fr 1fr';
+  toast.classList.remove('show');
+  const toastMsg = (html, dot) => {
+    $('#s3-toast-txt').textContent = html;
+    toast.querySelector('.dot').style.cssText = dot;
+    toast.classList.add('show');
+    later(2600, () => toast.classList.remove('show'));
+  };
+  const line = (cls, text) => { const d = document.createElement('div'); d.className = 'line ' + cls; d.textContent = text; tx.appendChild(d); };
+  const cfg = {tx, cap: $('#s3-cap'), tiles: {ai, vc, f: $('#s3-me')}};
+  play([['ai', "Jordan's joining now. Thanks Priya, I'll hand it over.", {pause:400}]], cfg);
+  later(1200, () => {
+    vc.style.display = ''; tiles.style.gridTemplateColumns = '1fr 1fr 1fr';
+    toastMsg('Jordan Lee joined the call', 'background:linear-gradient(135deg,#2F7FD8,#1BB5A5)');
+    line('sys', 'Jordan Lee joined');
+  });
+  later(4300, () => {
+    ai.classList.add('leaving');
+    toastMsg('Jordan AI left · notes continue in the background', 'background:var(--orange)');
+    later(600, () => { ai.style.display = 'none'; tiles.style.gridTemplateColumns = '1fr 1fr'; line('sys', 'Jordan AI left. Notes keep running in the background.'); });
+  });
+  play([
+    ['vc', "Hey Priya! My AI caught me up on everything. Huge quarter, congrats.", {pause:5600}],
+    ['f', "Thanks! Closing that health-system deal was a big relief."],
+    ['vc', "Let's talk Series A. You said Q2. What milestones do you want to hit first?"],
+    ['f', "$250K MRR and gross margin back above 75%. Routing simple denials to a smaller model is the key to the margin."],
+    ['vc', "Makes sense. Once you're near $200K, I'll intro you to three healthcare leads I trust."],
+    ['f', "That would be amazing."],
+  ], cfg);
+}
+
+// ---- Scene 4 ----
+const NUDGES = [
+  {kind:'Missed question', src:'Gusto · payroll', title:'A senior engineer left on Oct 3 and it hasn\'t come up.', body:'Daniel Okafor (Sr. Engineer, owns the Epic and athenahealth integrations) was offboarded. Priya said "engineering is fine" at 08:42, with a 3.1s pause.', q:'"I saw Daniel left in early October. What happened, and who\'s covering the EHR integrations?"', ask:true},
+  {kind:'Missed question', src:'QuickBooks · AR aging', title:'Receivables over 60 days rose to $41K, from $12K.', body:'Two health systems account for 70% of it. Not discussed in either half of the call.', q:'"How are collections looking? I noticed AR over 60 days jumped this quarter."'},
+  {kind:'Follow-up', src:'Last check-in · Jul 18', title:'She committed to gross margin ≥ 75% by Q3.', body:'Margin landed at 71%. You covered the cause but not a recovery date.', q:'"When do you expect margin back above 75% with the smaller model?"'},
+];
+function s4(){
+  const tx = $('#s4-tx'); tx.innerHTML = '';
+  const box = $('#s4-nudges'); box.innerHTML = '';
+  $('#s4-sent').textContent = 'Upbeat on growth'; $('#s4-sentbar').style.cssText = 'width:78%;background:var(--good);transition:all 1s';
+  $('#s4-vis').textContent = 'Steady eye contact';
+  const cfg = {tx, tiles: {f: $('#s4-me'), vc: $('#s4-vc')}};
+  play([
+    ['vc', "How are you thinking about pricing for the hospital pilots?", {pause:500}],
+    ['f', "We take about eight percent of the revenue we recover, on top of a base platform fee."],
+    ['vc', "Nice. That ties your price directly to the value you create."],
+  ], cfg);
+  NUDGES.forEach((n, i) => later(1800 + i * 2600, () => {
+    const c = document.createElement('div');
+    c.className = 'nudge' + (i === 0 ? ' top' : '');
+    c.innerHTML = `<div class="kind">${i===0?'⚡ ':''}${n.kind}<span>${n.src}</span></div><h5>${n.title}</h5><p>${n.body}</p><div class="q">${n.q}</div><div class="acts"><button class="btn primary sm" data-ask>Ask now</button><button class="btn ghost sm" data-dismiss>Dismiss</button></div>`;
+    box.appendChild(c);
+    c.querySelector('[data-dismiss]').onclick = () => c.remove();
+    c.querySelector('[data-ask]').onclick = e => {
+      e.target.closest('.acts').innerHTML = '<span style="font-size:13px;color:var(--good);font-weight:600">✓ Asked · tracking the answer</span>';
+      c.classList.add('asked'); c.classList.remove('top');
+      c.querySelector('.kind').firstChild.textContent = 'Asked ';
+      if (n.ask) askDaniel(cfg); else play([['vc', n.q.replace(/"/g,''), {pause:200}], ['f', "Good catch. Let me look into it and send you an update this week."]], cfg);
+    };
+  }));
+}
+function askDaniel(cfg){
+  play([
+    ['vc', "One thing I wanted to check. I saw Daniel left in early October. What happened, and who's covering the EHR integrations?", {pause:200}],
+    ['f', "Yeah... he took an offer from a competitor. Honestly, I've been covering on-call myself for three weeks. I'm sleeping maybe five hours a night.", {pause:1400, then: () => {
+      $('#s4-sent').textContent = 'Guarded → opening up'; $('#s4-sentbar').style.cssText = 'width:46%;background:var(--warn);transition:all 1s';
+      $('#s4-vis').textContent = 'Looked away 6s, then re-engaged';
+    }}],
+    ['vc', "Thank you for telling me. Let's get you help. I'll intro you to two fractional engineering leads this week."],
+    ['f', "That would really help. Thank you.", {then: () => { $('#s4-sent').textContent = 'Relieved'; $('#s4-sentbar').style.cssText = 'width:64%;background:var(--good);transition:all 1s'; }}],
+  ], cfg);
+}
+
+// ---- Scene 5: charts ----
+function s5(){ drawRev(); drawSent(); }
+function svgEl(tag, attrs, parent){ const e = document.createElementNS('http://www.w3.org/2000/svg', tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; }
+function drawRev(){
+  const svg = $('#chart-rev'); svg.innerHTML = '';
+  const months = ['Apr','May','Jun','Jul','Aug','Sep'], mrr = [84,94,104,118,129,138], burn = [165,168,171,190,205,212];
+  const W = 640, H = 260, L = 40, R = 10, T = 14, B = 30, max = 250;
+  const x = i => L + (i + .5) * (W - L - R) / months.length, y = v => T + (H - T - B) * (1 - v / max);
+  [0,50,100,150,200,250].forEach(v => {
+    svgEl('line', {x1:L, x2:W-R, y1:y(v), y2:y(v), stroke:'#E3E7EE'}, svg);
+    svgEl('text', {x:L-8, y:y(v)+4, 'text-anchor':'end', 'font-size':11, fill:'#66728A'}, svg).textContent = v;
+  });
+  const bw = 34;
+  months.forEach((m,i) => {
+    const r = svgEl('rect', {x:x(i)-bw/2, width:bw, y:y(burn[i]), height:y(0)-y(burn[i]), rx:4, fill:'#E8641E', opacity:.85}, svg);
+    r.style.transformBox = 'fill-box'; r.style.transformOrigin = 'bottom';
+    r.animate([{transform:'scaleY(0)'}, {transform:'scaleY(1)'}], {duration:600, delay:i*70, easing:'ease-out', fill:'backwards'});
+    svgEl('text', {x:x(i), y:H-10, 'text-anchor':'middle', 'font-size':12, fill:'#66728A'}, svg).textContent = m;
+  });
+  const d = mrr.map((v,i) => (i ? 'L' : 'M') + x(i) + ' ' + y(v)).join(' ');
+  const p = svgEl('path', {d, fill:'none', stroke:'#12284C', 'stroke-width':3, 'stroke-linejoin':'round'}, svg);
+  const len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+  p.getBoundingClientRect(); p.style.transition = 'stroke-dashoffset 1.2s ease .3s'; p.style.strokeDashoffset = 0;
+  mrr.forEach((v,i) => {
+    svgEl('circle', {cx:x(i), cy:y(v), r:4.5, fill:'#fff', stroke:'#12284C', 'stroke-width':2.5}, svg);
+    if (i === mrr.length - 1) svgEl('text', {x:x(i), y:y(v)-12, 'text-anchor':'middle', 'font-size':12, 'font-weight':700, fill:'#12284C'}, svg).textContent = '$138K';
+  });
+  svgEl('text', {x:x(5), y:y(212)-8, 'text-anchor':'middle', 'font-size':12, 'font-weight':700, fill:'#B4480F'}, svg).textContent = '$212K';
+}
+function drawSent(){
+  const svg = $('#chart-sent'); svg.innerHTML = '';
+  const W = 640, H = 200, L = 30, R = 10, T = 20, B = 30;
+  const pts = [[0,.62],[2,.7],[4,.6],[6,.55],[8.7,.28],[10,.5],[12,.58],[15,.72],[17,.8],[20,.78],[22,.74],[24,.68],[26.2,.25],[27.5,.5],[29,.66],[30,.7]];
+  const x = m => L + (W - L - R) * m / 30, y = v => T + (H - T - B) * (1 - v);
+  svgEl('rect', {x:x(0), y:T, width:x(15)-x(0), height:H-T-B, fill:'#FDEBDF', opacity:.6}, svg);
+  svgEl('rect', {x:x(15), y:T, width:x(30)-x(15), height:H-T-B, fill:'#E3F1FB', opacity:.6}, svg);
+  svgEl('text', {x:x(7.5), y:T+14, 'text-anchor':'middle', 'font-size':11, 'font-weight':600, fill:'#B4480F'}, svg).textContent = 'JORDAN AI';
+  svgEl('text', {x:x(22.5), y:T+14, 'text-anchor':'middle', 'font-size':11, 'font-weight':600, fill:'#2F6FB0'}, svg).textContent = 'JORDAN LEE';
+  [0,5,10,15,20,25,30].forEach(m => svgEl('text', {x:x(m), y:H-10, 'text-anchor': m === 0 ? 'start' : m === 30 ? 'end' : 'middle', 'font-size':11, fill:'#66728A'}, svg).textContent = m + 'm');
+  let d = `M${x(pts[0][0])} ${y(pts[0][1])}`;
+  for (let i = 1; i < pts.length; i++){ const [a,b] = pts[i-1], [c,e] = pts[i]; const mx = (x(a)+x(c))/2; d += ` C${mx} ${y(b)} ${mx} ${y(e)} ${x(c)} ${y(e)}`; }
+  const p = svgEl('path', {d, fill:'none', stroke:'#12284C', 'stroke-width':2.5}, svg);
+  const len = p.getTotalLength(); p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+  p.getBoundingClientRect(); p.style.transition = 'stroke-dashoffset 1.4s ease'; p.style.strokeDashoffset = 0;
+  [[8.7,.28,'08:42 · "engineering is fine"'],[26.2,.25,'26:10 · Daniel left, on-call herself']].forEach(([m,v,t]) => {
+    svgEl('circle', {cx:x(m), cy:y(v), r:5, fill:'#D2452F'}, svg);
+    svgEl('text', {x:x(m)+9, y:y(v)+16, 'font-size':11.5, 'font-weight':600, fill:'#D2452F', 'text-anchor': m > 20 ? 'end' : 'start'}, svg).textContent = t;
+  });
+}
+
+// ---- portraits: founder (webcam-style, shaded) and VC (memoji-style) ----
+// Each instance gets unique gradient ids, since url(#id) into a hidden scene won't render.
+function founderSVG(u){ return `
+<svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <linearGradient id="wall${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ddcdb9"/><stop offset="1" stop-color="#9a846e"/></linearGradient>
+  <filter id="bl${u}" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="7"/></filter>
+  <filter id="soft${u}"><feGaussianBlur stdDeviation="3"/></filter>
+  <filter id="grain${u}"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .1 0"/></filter>
+  <radialGradient id="skin${u}" cx=".4" cy=".38" r=".72"><stop offset="0" stop-color="#dba481"/><stop offset=".55" stop-color="#bb7c5a"/><stop offset="1" stop-color="#8c5438"/></radialGradient>
+  <linearGradient id="neck${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a462e"/><stop offset=".6" stop-color="#a86d4d"/></linearGradient>
+  <linearGradient id="hair${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3d271b"/><stop offset=".6" stop-color="#1d120c"/><stop offset="1" stop-color="#0d0705"/></linearGradient>
+  <linearGradient id="blz${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d4c66"/><stop offset="1" stop-color="#1b2435"/></linearGradient>
+  <radialGradient id="key${u}" cx=".18" cy=".3" r=".85"><stop offset="0" stop-color="#fff4e2" stop-opacity=".4"/><stop offset="1" stop-color="#fff4e2" stop-opacity="0"/></radialGradient>
+  <radialGradient id="vig${u}" cx=".5" cy=".45" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>
+</defs>
+<g filter="url(#bl${u})">
+  <rect x="-20" y="-20" width="680" height="440" fill="url(#wall${u})"/>
+  <rect x="20" y="36" width="150" height="240" rx="4" fill="#f6f0e4"/>
+  <rect x="28" y="44" width="134" height="224" fill="#dfeaf2"/>
+  <line x1="95" y1="40" x2="95" y2="272" stroke="#cbb9a2" stroke-width="7"/>
+  <line x1="24" y1="156" x2="166" y2="156" stroke="#cbb9a2" stroke-width="7"/>
+  <rect x="470" y="158" width="190" height="10" fill="#6b4f3a"/>
+  <rect x="470" y="258" width="190" height="10" fill="#6b4f3a"/>
+  <rect x="486" y="104" width="16" height="54" fill="#b5523b"/><rect x="504" y="112" width="12" height="46" fill="#2f5d7c"/><rect x="518" y="98" width="18" height="60" fill="#d9b15d"/><rect x="540" y="116" width="14" height="42" fill="#567a4f"/><rect x="560" y="108" width="20" height="50" fill="#e7e1d4"/>
+  <rect x="490" y="212" width="20" height="46" fill="#3e3a56"/><rect x="512" y="204" width="14" height="54" fill="#c27a4a"/><rect x="530" y="214" width="18" height="44" fill="#8aa0b3"/>
+  <ellipse cx="600" cy="300" rx="26" ry="40" fill="#4f7a43"/><ellipse cx="582" cy="276" rx="16" ry="34" fill="#679254" transform="rotate(-25 582 276)"/><ellipse cx="618" cy="270" rx="14" ry="32" fill="#5b8a4a" transform="rotate(20 618 270)"/>
+  <rect x="582" y="320" width="40" height="44" rx="4" fill="#c9b49a"/>
+  <circle cx="610" cy="40" r="40" fill="#fff2d0" opacity=".55"/>
+</g>
+<rect width="640" height="400" fill="url(#key${u})"/>
+<g class="breathe">
+  <path fill="url(#hair${u})" d="M262 150C258 92 296 90 320 90c34 0 64 12 62 70 2 60 10 108 22 140H236c12-40 22-88 26-150z"/>
+  <path fill="url(#neck${u})" d="M296 214v76c12 12 36 12 48 0v-76z"/>
+  <path fill="url(#blz${u})" d="M140 400c10-82 76-112 130-120h100c54 8 120 38 130 120z"/>
+  <path fill="#efe9e0" d="M284 282l36 62 36-62z"/>
+  <path fill="#2a3449" d="M270 281l24 6 26 60-30 53h-40l14-52-20-40zM370 281l-24 6-26 60 30 53h40l-14-52 20-40z" opacity=".85"/>
+  <path fill="url(#hair${u})" d="M262 168c-6 60-12 100-30 132 18 4 32-6 40-20 4-40 2-80-2-112zM378 168c6 60 12 100 30 132-18 4-32-6-40-20-4-40-2-80 2-112z"/>
+  <g class="sway">
+    <ellipse cx="266" cy="178" rx="8" ry="14" fill="#a66a4b"/>
+    <ellipse cx="374" cy="178" rx="8" ry="14" fill="#91573b"/>
+    <path fill="url(#skin${u})" d="M266 160c0-50 24-60 54-60s54 10 54 60c0 45-22 78-54 80-32-2-54-35-54-80z"/>
+    <ellipse cx="360" cy="186" rx="16" ry="34" fill="#6e3d27" opacity=".28" filter="url(#soft${u})"/>
+    <ellipse cx="320" cy="236" rx="30" ry="8" fill="#6e3d27" opacity=".25" filter="url(#soft${u})"/>
+    <ellipse cx="292" cy="192" rx="12" ry="7" fill="#c8645a" opacity=".22" filter="url(#soft${u})"/>
+    <ellipse cx="348" cy="192" rx="12" ry="7" fill="#c8645a" opacity=".22" filter="url(#soft${u})"/>
+    <path d="M285 149q13-8 26-2M329 147q13-6 26 2" stroke="#24150e" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+    <ellipse cx="298" cy="164" rx="10" ry="5.5" fill="#f1e8e1"/><ellipse cx="342" cy="164" rx="10" ry="5.5" fill="#f1e8e1"/>
+    <circle cx="298" cy="164" r="5" fill="#3a2315"/><circle cx="342" cy="164" r="5" fill="#3a2315"/>
+    <circle cx="298" cy="164" r="2.3" fill="#0f0805"/><circle cx="342" cy="164" r="2.3" fill="#0f0805"/>
+    <circle cx="300" cy="162" r="1.3" fill="#fff"/><circle cx="344" cy="162" r="1.3" fill="#fff"/>
+    <path d="M287 163q11-8 22 0M331 163q11-8 22 0" stroke="#160c07" stroke-width="2.2" fill="none"/>
+    <rect class="lid" x="286" y="156" width="24" height="13" rx="6" fill="#b57756"/>
+    <rect class="lid" x="330" y="156" width="24" height="13" rx="6" fill="#ac6f4f"/>
+    <path d="M318 172q-4 20-9 25 9 6 21 0" stroke="#7d4a31" stroke-width="2" fill="none" opacity=".75"/>
+    <path d="M322 174l1 16" stroke="#e8b996" stroke-width="2.5" opacity=".5" stroke-linecap="round"/>
+    <path fill="#94463f" d="M303 213q9-5 17-2 8-3 17 2-17 4-34 0z"/>
+    <path class="mouth-talk" fill="#b05c53" d="M304 214q16 12 32 0-16 4-32 0z"/>
+    <path fill="url(#hair${u})" d="M262 162c-4-62 38-76 68-70 36 6 54 38 50 84-8-34-30-56-62-58-18 14-36 26-50 60z"/>
+    <path d="M300 99c30-5 56 6 70 28" stroke="#5c3b29" stroke-width="3" fill="none" opacity=".6"/>
+    <circle cx="266" cy="196" r="3" fill="#e2c06b"/><circle cx="374" cy="196" r="3" fill="#e2c06b"/>
+  </g>
+</g>
+<rect width="640" height="400" fill="url(#vig${u})"/>
+<rect width="640" height="400" filter="url(#grain${u})" opacity=".6"/>
+</svg>`; }
+
+function memojiSVG(u){ return `
+<svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice">
+<defs>
+  <radialGradient id="mbg${u}" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#d7eeff"/><stop offset="1" stop-color="#86bde9"/></radialGradient>
+  <radialGradient id="mskin${u}" cx=".42" cy=".35" r=".75"><stop offset="0" stop-color="#ffe2c4"/><stop offset=".6" stop-color="#f3b98f"/><stop offset="1" stop-color="#d98f66"/></radialGradient>
+  <linearGradient id="mhair${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b4430"/><stop offset="1" stop-color="#3a2216"/></linearGradient>
+  <linearGradient id="mhood${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34c3b2"/><stop offset="1" stop-color="#15877b"/></linearGradient>
+  <radialGradient id="miris${u}" cx=".4" cy=".35" r=".7"><stop offset="0" stop-color="#8a5a34"/><stop offset="1" stop-color="#3f2614"/></radialGradient>
+  <filter id="msh${u}"><feGaussianBlur stdDeviation="8"/></filter>
+</defs>
+<rect width="640" height="400" fill="url(#mbg${u})"/>
+<g class="bob">
+  <ellipse cx="320" cy="318" rx="110" ry="22" fill="#1d5f8a" opacity=".25" filter="url(#msh${u})"/>
+  <path fill="#e7a47c" d="M298 262h44v54h-44z"/>
+  <path fill="url(#mhood${u})" d="M180 400c8-60 60-92 140-92s132 32 140 92z"/>
+  <path fill="#0f6d63" opacity=".5" d="M282 310c10 18 66 18 76 0-12 26-64 26-76 0z"/>
+  <ellipse cx="240" cy="188" rx="15" ry="23" fill="#eba57c"/><ellipse cx="400" cy="188" rx="15" ry="23" fill="#e39c72"/>
+  <ellipse cx="242" cy="190" rx="7" ry="12" fill="#d48a62"/><ellipse cx="398" cy="190" rx="7" ry="12" fill="#cc845c"/>
+  <ellipse cx="320" cy="180" rx="82" ry="94" fill="url(#mskin${u})"/>
+  <ellipse cx="300" cy="118" rx="38" ry="16" fill="#fff" opacity=".22"/>
+  <path fill="url(#mhair${u})" d="M236 168c-10-72 40-108 90-106 56 2 90 40 78 106-10-34-36-58-62-58-14 10-48 16-74 6-16 10-26 28-32 52z"/>
+  <path d="M286 82c22-10 54-8 72 6" stroke="#9a6a4c" stroke-width="6" stroke-linecap="round" fill="none" opacity=".7"/>
+  <ellipse cx="282" cy="214" rx="16" ry="9" fill="#ff8f8f" opacity=".3"/><ellipse cx="358" cy="214" rx="16" ry="9" fill="#ff8f8f" opacity=".3"/>
+  <path d="M272 150q18-12 34-2M334 148q16-10 34 2" stroke="#4a2c1b" stroke-width="7" stroke-linecap="round" fill="none"/>
+  <ellipse cx="290" cy="180" rx="17" ry="19" fill="#fff"/><ellipse cx="350" cy="180" rx="17" ry="19" fill="#fff"/>
+  <circle cx="291" cy="182" r="12" fill="url(#miris${u})"/><circle cx="349" cy="182" r="12" fill="url(#miris${u})"/>
+  <circle cx="291" cy="182" r="6" fill="#1a0f08"/><circle cx="349" cy="182" r="6" fill="#1a0f08"/>
+  <circle cx="295" cy="177" r="4" fill="#fff"/><circle cx="353" cy="177" r="4" fill="#fff"/>
+  <ellipse class="lid" cx="290" cy="171" rx="18" ry="20" fill="#f2b68c"/>
+  <ellipse class="lid" cx="350" cy="171" rx="18" ry="20" fill="#f2b68c"/>
+  <circle cx="290" cy="180" r="27" fill="none" stroke="#24262e" stroke-width="5"/>
+  <circle cx="350" cy="180" r="27" fill="none" stroke="#24262e" stroke-width="5"/>
+  <path d="M317 176q3-4 6 0M263 176l-22-6M377 176l22-6" stroke="#24262e" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="320" cy="210" rx="9" ry="7" fill="#e0956c" opacity=".75"/>
+  <path class="mouth-talk" fill="#7a2f2f" d="M292 232q28 30 56 0-28 10-56 0z"/>
+  <path fill="#fff" d="M297 234q23 8 46 0l-3 6q-20 5-40 0z"/>
+</g>
+</svg>`; }
+
+let pid = 0;
+document.querySelectorAll('[data-portrait]').forEach(el => {
+  el.innerHTML = (el.dataset.portrait === 'vc' ? memojiSVG : founderSVG)('p' + pid++);
+});
+
+// ---- optional live camera for the self-view tiles ----
+document.querySelectorAll('[data-cam]').forEach(b => b.onclick = async e => {
+  e.stopPropagation();
+  if (camStream){ camStream.getTracks().forEach(t => t.stop()); camStream = null; document.querySelectorAll('.tile video').forEach(v => v.remove()); document.querySelectorAll('[data-cam]').forEach(x => x.textContent = 'Use camera'); return; }
+  try { camStream = await navigator.mediaDevices.getUserMedia({video:true}); attachCam(); document.querySelectorAll('[data-cam]').forEach(x => x.textContent = 'Camera off'); }
+  catch(err){ b.textContent = 'Camera blocked'; }
+});
+function attachCam(){
+  if (!camStream) return;
+  document.querySelectorAll('[data-cam]').forEach(b => {
+    const tile = b.closest('.tile');
+    if (tile.closest('.scene.on') && !tile.querySelector('video')){
+      const v = document.createElement('video'); v.autoplay = v.muted = v.playsInline = true; v.srcObject = camStream;
+      tile.prepend(v);
+    }
+  });
+}
+
+// ---- keys ----
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') go(current + 1);
+  else if (e.key === 'ArrowLeft') go(current - 1);
+  else if (e.key.toLowerCase() === 'r') go(current);
+  else if (e.key.toLowerCase() === 'h') document.body.classList.toggle('hide-chrome');
+});
+
+const fromHash = () => Math.max(0, Math.min(4, (parseInt(location.hash.slice(1)) || 1) - 1));
+window.addEventListener('hashchange', () => { if (fromHash() !== current) go(fromHash()); });
+go(fromHash());
+</script>
+</body>
+</html>
