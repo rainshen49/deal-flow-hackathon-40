@@ -56,15 +56,11 @@ body.hide-chrome .stage{height:100vh}
 .tile.speaking{outline-color:var(--orange)}
 .tile .name{position:absolute;left:14px;bottom:14px;font-size:13px;font-weight:600;background:rgba(10,23,48,.7);backdrop-filter:blur(6px);padding:6px 10px;border-radius:8px;display:flex;align-items:center;gap:8px}
 .tile .name .tag{font-size:10px;letter-spacing:.06em;text-transform:uppercase;background:var(--orange);color:#fff;padding:2px 6px;border-radius:4px}
-.tile video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-.tile video{z-index:1}
+.tile video.cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1);z-index:1}
+.clip{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 30%}
 .tile .name,.camera-btn{z-index:2}
 .portrait{position:absolute;inset:0}
 .portrait svg{width:100%;height:100%;display:block}
-.portrait .breathe{animation:breathe 5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
-@keyframes breathe{50%{transform:translateY(1.5px) scale(1.006)}}
-.portrait .sway{animation:sway 8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 85%}
-@keyframes sway{30%{transform:rotate(-1.4deg) translateX(-2px)}70%{transform:rotate(1.1deg) translateX(2px)}}
 .portrait .lid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0);animation:blink-lid 4.6s infinite}
 @keyframes blink-lid{0%,93%,100%{transform:scaleY(0)}96%{transform:scaleY(1)}}
 .portrait .bob{animation:bob 3.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 90%}
@@ -78,28 +74,8 @@ body.hide-chrome .stage{height:100vh}
 
 /* AI avatar */
 .ai-tile{background:radial-gradient(90% 80% at 50% 40%,#1E3A6B 0%,#0E1B33 70%)}
-.avatar{position:relative;width:min(46%,260px);aspect-ratio:1;display:flex;align-items:center;justify-content:center}
-.avatar .ring{position:absolute;inset:0;border-radius:50%;border:2px solid rgba(232,100,30,.35);opacity:0}
-.ai-tile.speaking .avatar .ring{animation:ring 2s infinite}
-.ai-tile.speaking .avatar .ring:nth-child(2){animation-delay:.66s}
-.ai-tile.speaking .avatar .ring:nth-child(3){animation-delay:1.33s}
-@keyframes ring{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.35);opacity:0}}
-.avatar .core{width:78%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2A4C85,#12284C 70%);box-shadow:0 20px 60px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center}
-.avatar svg{width:56%;height:56%}
-.avatar .l{transition:transform .12s}
-.avatar .r{transition:transform .12s}
-.ai-tile.speaking .avatar .l{animation:talkL .36s infinite alternate}
-.ai-tile.speaking .avatar .r{animation:talkR .36s infinite alternate}
-@keyframes talkL{to{transform:translateX(-5px)}}
-@keyframes talkR{to{transform:translateX(5px) scaleY(.94)}}
-.wave{position:absolute;bottom:-34px;display:flex;gap:4px;height:22px;align-items:center}
-.wave i{width:4px;height:4px;border-radius:2px;background:var(--orange);opacity:.5}
-.ai-tile.speaking .wave i{animation:bar .5s infinite alternate}
-.wave i:nth-child(2){animation-delay:.1s!important}.wave i:nth-child(3){animation-delay:.2s!important}.wave i:nth-child(4){animation-delay:.3s!important}.wave i:nth-child(5){animation-delay:.15s!important}
-@keyframes bar{to{height:22px;opacity:1}}
 
 .pip{position:absolute;right:16px;bottom:16px;width:22%;min-width:160px;aspect-ratio:16/10;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.4);z-index:3}
-.pip .person{width:42%;font-size:22px}
 .pip .name{left:8px;bottom:8px;font-size:11px;padding:4px 7px}
 
 .caption{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);max-width:70%;text-align:center;font-size:18px;line-height:1.45;background:rgba(5,12,26,.78);padding:10px 16px;border-radius:10px;color:#fff;z-index:2;transition:opacity .3s}
@@ -259,15 +235,11 @@ body.hide-chrome .hint-keys{display:none}
       <div class="call-body">
         <div class="tiles" style="grid-template-columns:1fr">
           <div class="tile ai-tile" id="s1-ai">
-            <div class="avatar">
-              <span class="ring"></span><span class="ring"></span><span class="ring"></span>
-              <div class="core"><svg viewBox="0 0 200 200"><path class="l" fill="#fff" d="M94.02 8 A92 92 0 0 0 94.02 192 Z"/><path class="r" fill="#E8641E" d="M105.98 8 A92 92 0 0 1 105.98 192 Z"/></svg></div>
-              <div class="wave"><i></i><i></i><i></i><i></i><i></i></div>
-            </div>
+            <div class="portrait" data-portrait="vc"></div>
             <div class="name">Jordan <span class="tag">AI</span></div>
             <div class="caption" id="s1-cap"></div>
             <div class="tile pip cam-person" id="s1-me">
-              <div class="portrait" data-portrait="founder"></div>
+              <video class="clip" src="assets/priya.mp4" muted loop playsinline autoplay preload="auto"></video>
               <div class="name">Priya Raman (you)</div>
               <button class="camera-btn" data-cam>Use camera</button>
             </div>
@@ -306,14 +278,11 @@ body.hide-chrome .hint-keys{display:none}
         <div class="call-body">
           <div class="tiles">
             <div class="tile ai-tile" id="s2-ai">
-              <div class="avatar" style="width:52%">
-                <span class="ring"></span><span class="ring"></span><span class="ring"></span>
-                <div class="core"><svg viewBox="0 0 200 200"><path class="l" fill="#fff" d="M94.02 8 A92 92 0 0 0 94.02 192 Z"/><path class="r" fill="#E8641E" d="M105.98 8 A92 92 0 0 1 105.98 192 Z"/></svg></div>
-              </div>
+              <div class="portrait" data-portrait="vc"></div>
               <div class="name">Jordan <span class="tag">AI</span></div>
             </div>
             <div class="tile cam-person" id="s2-me">
-              <div class="portrait" data-portrait="founder"></div>
+              <video class="clip" src="assets/priya.mp4" muted loop playsinline autoplay preload="auto"></video>
               <div class="name">Priya Raman · CEO, Adonis</div>
             </div>
           </div>
@@ -382,18 +351,15 @@ body.hide-chrome .hint-keys{display:none}
         <div class="tiles" id="s3-tiles" style="grid-template-columns:1fr 1fr">
           <div class="toast" id="s3-toast"><span class="dot" style="background:linear-gradient(135deg,#2F7FD8,#1BB5A5)">JL</span><span id="s3-toast-txt">Jordan Lee joined the call</span></div>
           <div class="tile ai-tile" id="s3-ai">
-            <div class="avatar">
-              <span class="ring"></span><span class="ring"></span><span class="ring"></span>
-              <div class="core"><svg viewBox="0 0 200 200"><path class="l" fill="#fff" d="M94.02 8 A92 92 0 0 0 94.02 192 Z"/><path class="r" fill="#E8641E" d="M105.98 8 A92 92 0 0 1 105.98 192 Z"/></svg></div>
-            </div>
+            <div class="portrait" data-portrait="vc"></div>
             <div class="name">Jordan <span class="tag">AI</span></div>
           </div>
           <div class="tile cam-person" id="s3-vc" style="display:none">
-            <div class="portrait" data-portrait="vc"></div>
+            <video class="clip" src="assets/jordan.mp4" muted loop playsinline autoplay preload="auto"></video>
             <div class="name">Jordan Lee · Partner, Lakeshore</div>
           </div>
           <div class="tile cam-person" id="s3-me">
-            <div class="portrait" data-portrait="founder"></div>
+            <video class="clip" src="assets/priya.mp4" muted loop playsinline autoplay preload="auto"></video>
             <div class="name">Priya Raman (you)</div>
             <button class="camera-btn" data-cam>Use camera</button>
           </div>
@@ -432,11 +398,11 @@ body.hide-chrome .hint-keys{display:none}
         <div class="call-body">
           <div class="tiles">
             <div class="tile cam-person" id="s4-me">
-              <div class="portrait" data-portrait="founder"></div>
+              <video class="clip" src="assets/priya.mp4" muted loop playsinline autoplay preload="auto"></video>
               <div class="name">Priya Raman · CEO</div>
             </div>
             <div class="tile cam-person" id="s4-vc">
-              <div class="portrait" data-portrait="vc"></div>
+              <video class="clip" src="assets/jordan.mp4" muted loop playsinline autoplay preload="auto"></video>
               <div class="name">Jordan Lee (you)</div>
               <button class="camera-btn" data-cam>Use camera</button>
             </div>
@@ -615,6 +581,7 @@ function go(i){
     timers.push(setInterval(() => { clockSec++; el.textContent = fmt(clockSec); }, 1000));
   }
   attachCam();
+  document.querySelectorAll(`[data-scene="${i}"] video.clip`).forEach(v => { v.currentTime = 0; v.play().catch(() => {}); });
   [s1, s2, s3, s4, s5][i]();
 }
 
@@ -844,77 +811,12 @@ function drawSent(){
   });
 }
 
-// ---- portraits: founder (webcam-style, shaded) and VC (memoji-style) ----
+// ---- Jordan AI avatar (memoji-style) ----
 // Each instance gets unique gradient ids, since url(#id) into a hidden scene won't render.
-function founderSVG(u){ return `
-<svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice">
-<defs>
-  <linearGradient id="wall${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ddcdb9"/><stop offset="1" stop-color="#9a846e"/></linearGradient>
-  <filter id="bl${u}" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="7"/></filter>
-  <filter id="soft${u}"><feGaussianBlur stdDeviation="3"/></filter>
-  <filter id="grain${u}"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .1 0"/></filter>
-  <radialGradient id="skin${u}" cx=".4" cy=".38" r=".72"><stop offset="0" stop-color="#dba481"/><stop offset=".55" stop-color="#bb7c5a"/><stop offset="1" stop-color="#8c5438"/></radialGradient>
-  <linearGradient id="neck${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a462e"/><stop offset=".6" stop-color="#a86d4d"/></linearGradient>
-  <linearGradient id="hair${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3d271b"/><stop offset=".6" stop-color="#1d120c"/><stop offset="1" stop-color="#0d0705"/></linearGradient>
-  <linearGradient id="blz${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3d4c66"/><stop offset="1" stop-color="#1b2435"/></linearGradient>
-  <radialGradient id="key${u}" cx=".18" cy=".3" r=".85"><stop offset="0" stop-color="#fff4e2" stop-opacity=".4"/><stop offset="1" stop-color="#fff4e2" stop-opacity="0"/></radialGradient>
-  <radialGradient id="vig${u}" cx=".5" cy=".45" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></radialGradient>
-</defs>
-<g filter="url(#bl${u})">
-  <rect x="-20" y="-20" width="680" height="440" fill="url(#wall${u})"/>
-  <rect x="20" y="36" width="150" height="240" rx="4" fill="#f6f0e4"/>
-  <rect x="28" y="44" width="134" height="224" fill="#dfeaf2"/>
-  <line x1="95" y1="40" x2="95" y2="272" stroke="#cbb9a2" stroke-width="7"/>
-  <line x1="24" y1="156" x2="166" y2="156" stroke="#cbb9a2" stroke-width="7"/>
-  <rect x="470" y="158" width="190" height="10" fill="#6b4f3a"/>
-  <rect x="470" y="258" width="190" height="10" fill="#6b4f3a"/>
-  <rect x="486" y="104" width="16" height="54" fill="#b5523b"/><rect x="504" y="112" width="12" height="46" fill="#2f5d7c"/><rect x="518" y="98" width="18" height="60" fill="#d9b15d"/><rect x="540" y="116" width="14" height="42" fill="#567a4f"/><rect x="560" y="108" width="20" height="50" fill="#e7e1d4"/>
-  <rect x="490" y="212" width="20" height="46" fill="#3e3a56"/><rect x="512" y="204" width="14" height="54" fill="#c27a4a"/><rect x="530" y="214" width="18" height="44" fill="#8aa0b3"/>
-  <ellipse cx="600" cy="300" rx="26" ry="40" fill="#4f7a43"/><ellipse cx="582" cy="276" rx="16" ry="34" fill="#679254" transform="rotate(-25 582 276)"/><ellipse cx="618" cy="270" rx="14" ry="32" fill="#5b8a4a" transform="rotate(20 618 270)"/>
-  <rect x="582" y="320" width="40" height="44" rx="4" fill="#c9b49a"/>
-  <circle cx="610" cy="40" r="40" fill="#fff2d0" opacity=".55"/>
-</g>
-<rect width="640" height="400" fill="url(#key${u})"/>
-<g class="breathe">
-  <path fill="url(#hair${u})" d="M262 150C258 92 296 90 320 90c34 0 64 12 62 70 2 60 10 108 22 140H236c12-40 22-88 26-150z"/>
-  <path fill="url(#neck${u})" d="M296 214v76c12 12 36 12 48 0v-76z"/>
-  <path fill="url(#blz${u})" d="M140 400c10-82 76-112 130-120h100c54 8 120 38 130 120z"/>
-  <path fill="#efe9e0" d="M284 282l36 62 36-62z"/>
-  <path fill="#2a3449" d="M270 281l24 6 26 60-30 53h-40l14-52-20-40zM370 281l-24 6-26 60 30 53h40l-14-52 20-40z" opacity=".85"/>
-  <path fill="url(#hair${u})" d="M262 168c-6 60-12 100-30 132 18 4 32-6 40-20 4-40 2-80-2-112zM378 168c6 60 12 100 30 132-18 4-32-6-40-20-4-40-2-80 2-112z"/>
-  <g class="sway">
-    <ellipse cx="266" cy="178" rx="8" ry="14" fill="#a66a4b"/>
-    <ellipse cx="374" cy="178" rx="8" ry="14" fill="#91573b"/>
-    <path fill="url(#skin${u})" d="M266 160c0-50 24-60 54-60s54 10 54 60c0 45-22 78-54 80-32-2-54-35-54-80z"/>
-    <ellipse cx="360" cy="186" rx="16" ry="34" fill="#6e3d27" opacity=".28" filter="url(#soft${u})"/>
-    <ellipse cx="320" cy="236" rx="30" ry="8" fill="#6e3d27" opacity=".25" filter="url(#soft${u})"/>
-    <ellipse cx="292" cy="192" rx="12" ry="7" fill="#c8645a" opacity=".22" filter="url(#soft${u})"/>
-    <ellipse cx="348" cy="192" rx="12" ry="7" fill="#c8645a" opacity=".22" filter="url(#soft${u})"/>
-    <path d="M285 149q13-8 26-2M329 147q13-6 26 2" stroke="#24150e" stroke-width="4.5" stroke-linecap="round" fill="none"/>
-    <ellipse cx="298" cy="164" rx="10" ry="5.5" fill="#f1e8e1"/><ellipse cx="342" cy="164" rx="10" ry="5.5" fill="#f1e8e1"/>
-    <circle cx="298" cy="164" r="5" fill="#3a2315"/><circle cx="342" cy="164" r="5" fill="#3a2315"/>
-    <circle cx="298" cy="164" r="2.3" fill="#0f0805"/><circle cx="342" cy="164" r="2.3" fill="#0f0805"/>
-    <circle cx="300" cy="162" r="1.3" fill="#fff"/><circle cx="344" cy="162" r="1.3" fill="#fff"/>
-    <path d="M287 163q11-8 22 0M331 163q11-8 22 0" stroke="#160c07" stroke-width="2.2" fill="none"/>
-    <rect class="lid" x="286" y="156" width="24" height="13" rx="6" fill="#b57756"/>
-    <rect class="lid" x="330" y="156" width="24" height="13" rx="6" fill="#ac6f4f"/>
-    <path d="M318 172q-4 20-9 25 9 6 21 0" stroke="#7d4a31" stroke-width="2" fill="none" opacity=".75"/>
-    <path d="M322 174l1 16" stroke="#e8b996" stroke-width="2.5" opacity=".5" stroke-linecap="round"/>
-    <path fill="#94463f" d="M303 213q9-5 17-2 8-3 17 2-17 4-34 0z"/>
-    <path class="mouth-talk" fill="#b05c53" d="M304 214q16 12 32 0-16 4-32 0z"/>
-    <path fill="url(#hair${u})" d="M262 162c-4-62 38-76 68-70 36 6 54 38 50 84-8-34-30-56-62-58-18 14-36 26-50 60z"/>
-    <path d="M300 99c30-5 56 6 70 28" stroke="#5c3b29" stroke-width="3" fill="none" opacity=".6"/>
-    <circle cx="266" cy="196" r="3" fill="#e2c06b"/><circle cx="374" cy="196" r="3" fill="#e2c06b"/>
-  </g>
-</g>
-<rect width="640" height="400" fill="url(#vig${u})"/>
-<rect width="640" height="400" filter="url(#grain${u})" opacity=".6"/>
-</svg>`; }
-
 function memojiSVG(u){ return `
 <svg viewBox="0 0 640 400" preserveAspectRatio="xMidYMid slice">
 <defs>
-  <radialGradient id="mbg${u}" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#d7eeff"/><stop offset="1" stop-color="#86bde9"/></radialGradient>
+  <radialGradient id="mbg${u}" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#2A4C85"/><stop offset="1" stop-color="#0E1B33"/></radialGradient>
   <radialGradient id="mskin${u}" cx=".42" cy=".35" r=".75"><stop offset="0" stop-color="#ffe2c4"/><stop offset=".6" stop-color="#f3b98f"/><stop offset="1" stop-color="#d98f66"/></radialGradient>
   <linearGradient id="mhair${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b4430"/><stop offset="1" stop-color="#3a2216"/></linearGradient>
   <linearGradient id="mhood${u}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34c3b2"/><stop offset="1" stop-color="#15877b"/></linearGradient>
@@ -923,7 +825,7 @@ function memojiSVG(u){ return `
 </defs>
 <rect width="640" height="400" fill="url(#mbg${u})"/>
 <g class="bob">
-  <ellipse cx="320" cy="318" rx="110" ry="22" fill="#1d5f8a" opacity=".25" filter="url(#msh${u})"/>
+  <ellipse cx="320" cy="318" rx="110" ry="22" fill="#E8641E" opacity=".35" filter="url(#msh${u})"/>
   <path fill="#e7a47c" d="M298 262h44v54h-44z"/>
   <path fill="url(#mhood${u})" d="M180 400c8-60 60-92 140-92s132 32 140 92z"/>
   <path fill="#0f6d63" opacity=".5" d="M282 310c10 18 66 18 76 0-12 26-64 26-76 0z"/>
@@ -952,13 +854,13 @@ function memojiSVG(u){ return `
 
 let pid = 0;
 document.querySelectorAll('[data-portrait]').forEach(el => {
-  el.innerHTML = (el.dataset.portrait === 'vc' ? memojiSVG : founderSVG)('p' + pid++);
+  el.innerHTML = memojiSVG('p' + pid++);
 });
 
 // ---- optional live camera for the self-view tiles ----
 document.querySelectorAll('[data-cam]').forEach(b => b.onclick = async e => {
   e.stopPropagation();
-  if (camStream){ camStream.getTracks().forEach(t => t.stop()); camStream = null; document.querySelectorAll('.tile video').forEach(v => v.remove()); document.querySelectorAll('[data-cam]').forEach(x => x.textContent = 'Use camera'); return; }
+  if (camStream){ camStream.getTracks().forEach(t => t.stop()); camStream = null; document.querySelectorAll('.tile video.cam').forEach(v => v.remove()); document.querySelectorAll('[data-cam]').forEach(x => x.textContent = 'Use camera'); return; }
   try { camStream = await navigator.mediaDevices.getUserMedia({video:true}); attachCam(); document.querySelectorAll('[data-cam]').forEach(x => x.textContent = 'Camera off'); }
   catch(err){ b.textContent = 'Camera blocked'; }
 });
@@ -966,8 +868,8 @@ function attachCam(){
   if (!camStream) return;
   document.querySelectorAll('[data-cam]').forEach(b => {
     const tile = b.closest('.tile');
-    if (tile.closest('.scene.on') && !tile.querySelector('video')){
-      const v = document.createElement('video'); v.autoplay = v.muted = v.playsInline = true; v.srcObject = camStream;
+    if (tile.closest('.scene.on') && !tile.querySelector('video.cam')){
+      const v = document.createElement('video'); v.className = 'cam'; v.autoplay = v.muted = v.playsInline = true; v.srcObject = camStream;
       tile.prepend(v);
     }
   });
