@@ -23,19 +23,21 @@ The founder gets something back for showing up: audit-ready books and an investo
 
 ## How we built it
 
-The demo is a single static `index.html` with plain HTML, CSS and JavaScript, so there is no framework or build step. A small script engine plays timed dialogue word by word. It drives the captions, transcripts, speaking indicators and the notes that appear as the call goes on. Each scene has a call clock that starts at its point in the 30-minute timeline.
+**The demo:** a single static web page in plain HTML, CSS and JavaScript, hosted on GitHub Pages. A small script engine plays timed dialogue, captions and live notes. Jordan AI is an animated, memoji-style avatar, the founder and partner are real video clips, and the example portfolio company is Adonis, with illustrative data.
 
-- **Avatars**: the AI avatar is built from the Halftime Report mark, and its two halves pulse while it speaks. The VC's memoji-style avatar and the founder's portrait are hand-drawn SVGs, animated with CSS to breathe, blink and talk. **Use camera** swaps in a live webcam feed.
-- **Charts**: the post-meeting charts are hand-built inline SVG.
-- **Brand**: colors and logos come from the Halftime Report brand kit.
-- **Demo data**: the story uses Adonis, an AI revenue-recovery company for healthcare providers, as the portfolio company. All people and financials are fictional.
+**The real thing:**
+
+- **[Nicrron](https://nicrronninoo.ai/): the AI brain.** The Nicrron API puts every major model behind one endpoint, with routing, fallbacks and caching. It would power the AI interviewer, the live notes, the missed-question nudges and the post-meeting report, and let us use the best model for each job without being locked in to one provider. Once NiNI Cloud opens, its serverless inference could host the agent pipeline.
+- **[akta.pro](https://akta.pro/): outside signals.** Its company data and news API covers 20M+ companies, with signals for hiring, launches, partnerships and expansion. It would add what's happening around each portfolio company to the founder's own books, so the AI can ask about news the founder didn't mention, and the fund gets portfolio-wide red-flag alerts.
+- **[Roundtable](https://roundtable.bot/): shared memory.** It gives the AI interviewer, note-taker, copilot and report writer one shared workspace for briefs, transcripts and notes on each founder. That memory carries over between quarters, so the AI follows up on last quarter's commitments, and the partner's own assistant can read the briefing before the call.
+- **[PRISM by Block Convey](https://blockconvey.com/prism): trust and quality.** Before launch, PRISM would test the AI interviewer against simulated founders, including evasive answers and missing data. After launch, it would trace every call and score whether the AI asked the right questions and caught the red flags. That's how we'd show partners the AI is reliable enough to run the first half of a check-in.
 
 ## Challenges we ran into
 
 - **Making a scripted demo feel live.** Typing speed, pauses before hard answers and notes that arrive just after the founder says something all had to be timed so the scenes play naturally on camera.
 - **The handoff.** The moment the AI leaves and the human arrives is the core of the product. It had to be clear to the founder that the partner is now there, and also that notes keep running.
 - **Sensitive signals.** Founder wellbeing is the most valuable thing a partner can learn and the easiest to get wrong. We kept it private to the partner, phrased it around support ("intro two fractional engineering leads"), and avoided anything that reads as surveillance.
-- **Realistic avatars without stock assets.** We drew the founder and VC as layered, animated SVGs instead of relying on third-party images.
+- **Real video in a browser call.** iPhone clips are HEVC, which Chrome doesn't reliably play, so we converted them to H.264 and cropped portrait footage to fit landscape call tiles.
 
 ## Accomplishments that we're proud of
 
